@@ -1,0 +1,18 @@
+[package]
+name = "auth"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+tokio = { version = "1.37.0", features = ["full"] }
+scylla = "0.12.0"
+futures = "0.3.30"
+uuid = { version = "1.8.0", features = ["v4", "serde"] }
+bigdecimal = "0.4.3"
+num-bigint = "0.4.4"
+tracing = "0.1.40"
+tracing-subscriber = { version = "0.3.18", features = ["env-filter"] }
+actix-web = "4"
+serde = { version = "1.0.200", features = ["derive"] }
+async-trait = "0.1.80"
+redis = { version = "0.25.3", features = ["tokio-comp"] }
