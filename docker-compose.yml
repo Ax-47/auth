@@ -5,6 +5,7 @@ services:
     image: scylladb/scylla:5.4
     container_name: database
     volumes:
-      - /var/lib/scylla:/var/lib/scylla
+      - "./lib/scylla:/var/lib/scylla"
+      - "./lib/mutant-data.txt:/mutant-data.txt"
     ports:
       - 9042:9042
