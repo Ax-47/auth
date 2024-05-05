@@ -3,21 +3,22 @@ use crate::domain::repositories::user::UserRepository;
 use crate::infrastructure::external::email::Sender;
 use async_trait::async_trait;
 use lettre::message::header::ContentType;
-use lettre::{Message, SmtpTransport, Transport};
+use lettre::transport::smtp::Error as SmtpError;
+use lettre::{Message, Transport};
 use liquid::ParserBuilder;
 use scylla::transport::errors::QueryError;
 use scylla::{QueryResult, Session};
 use std::sync::Arc;
 pub struct UserScyllaRepository {
     pub scylla_session: Arc<Session>,
-    pub email_credentials: Arc<Sender>,
+    pub emailer: Arc<Sender>,
 }
 
 impl UserScyllaRepository {
     pub fn new(session: Arc<Session>, credentials: Arc<Sender>) -> Self {
         UserScyllaRepository {
             scylla_session: session,
-            email_credentials: credentials,
+            emailer: credentials,
         }
     }
 }
@@ -50,9 +51,9 @@ impl UserRepository for UserScyllaRepository {
         Ok(query_result.is_some())
     }
 
-    async fn send_confirm_email(&self, email: String, confirm_id: String) {
-        let creds = self.email_credentials.creds.clone();
-        let email_sender = self.email_credentials.email.clone();
+    async fn send_confirm_email(&self, email: String, confirm_id: String) -> Result<(), SmtpError> {
+        let mailer = self.emailer.mailer.clone();
+        let email_sender = self.emailer.email.clone();
         let source =
             "<a href=\"127.0.0.1:8080/2fa/{{ confirm_id }}/sign_up\">click fucking here</a>";
         let template = ParserBuilder::with_stdlib()
@@ -71,10 +72,7 @@ impl UserRepository for UserScyllaRepository {
             .body(template.render(&globals).unwrap())
             .unwrap();
 
-        let mailer = SmtpTransport::relay("smtp.gmail.com")
-            .unwrap()
-            .credentials(creds)
-            .build();
-        mailer.send(&email_b).unwrap();
+        mailer.send(&email_b)?;
+        Ok(())
     }
 }
