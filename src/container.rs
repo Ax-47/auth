@@ -1,6 +1,6 @@
 use crate::domain::repositories::user::UserRepository;
 use crate::domain::services::user::UserService;
-use crate::infrastructure::external::email::init_sender;
+use crate::infrastructure::external::email::{init_sender, Sender};
 use crate::infrastructure::external::scylla::connect_scylladb;
 use crate::infrastructure::repositories::user::UserScyllaRepository;
 use crate::infrastructure::services::user::UserServiceImpl;
@@ -13,10 +13,10 @@ pub struct Container {
 impl Container {
     pub async fn new() -> Self {
         let scylla_session = connect_scylladb().await.unwrap();
-        let email_credentails = init_sender().await;
+        let email_sender: Sender = init_sender().await;
         let user_repo: Arc<dyn UserRepository> = Arc::new(UserScyllaRepository::new(
             Arc::new(scylla_session),
-            Arc::new(email_credentails),
+            Arc::new(email_sender),
         ));
         let user_service = Arc::new(UserServiceImpl {
             repository: user_repo,
