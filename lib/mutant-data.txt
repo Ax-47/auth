@@ -4,10 +4,13 @@ USE auth;
 
 CREATE TABLE IF NOT EXISTS users (
 id uuid,
-name text,
-tag text,
 email text,
 password text,
-role text,
+PRIMARY KEY(id),
+);
+
+CREATE TABLE IF NOT EXISTS confirm (
+id uuid,
+email text,
 PRIMARY KEY(id),
 );
