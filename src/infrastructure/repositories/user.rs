@@ -44,10 +44,6 @@ impl UserRepository for UserScyllaRepository {
             .query("select id from auth.user where email = ?", [email].as_ref())
             .await?
             .rows;
-        if query_result.is_some() {
-            Ok(true)
-        } else {
-            Ok(false)
-        }
+        Ok(query_result.is_some())
     }
 }
