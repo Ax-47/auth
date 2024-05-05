@@ -1,3 +1,4 @@
+use crate::application::controllers;
 use crate::container::Container;
 use actix_web::body::MessageBody;
 use actix_web::dev::{ServiceFactory, ServiceRequest, ServiceResponse};
@@ -23,8 +24,11 @@ pub fn create_app(
         .app_data(web::Data::from(container.user_service.clone()))
         .wrap(Logger::default())
         .service(
-            web::scope("/app")
+            web::scope("/auth")
                 // ...so this handles requests for `GET /app/index.html`
-                .route("/index.html", web::get().to(index)),
+                .route(
+                    "/confirm_email",
+                    web::post().to(controllers::user::confirm_email),
+                ),
         )
 }

@@ -1,11 +1,11 @@
-use std::sync::Arc;
-
 use crate::domain::entities::user::CreateUser;
 use crate::domain::repositories::user::UserRepository;
 use crate::domain::services::user::UserService;
 use async_trait::async_trait;
+use lettre::transport::smtp::Error as SmtpError;
 use scylla::transport::errors::QueryError;
 use scylla::QueryResult;
+use std::sync::Arc;
 #[derive(Clone)]
 pub struct UserServiceImpl {
     pub repository: Arc<dyn UserRepository>,
@@ -28,5 +28,15 @@ impl UserService for UserServiceImpl {
     }
     async fn is_email_exist(&self, email: String) -> Result<bool, QueryError> {
         Ok(self.repository.is_email_exist(email.clone()).await?)
+    }
+    async fn send_confirm_email(&self, email: String, confirm_id: String) -> Result<(), SmtpError> {
+        Ok(self.send_confirm_email(email, confirm_id).await?)
+    }
+    async fn create_confirm(
+        &self,
+        id: uuid::Uuid,
+        email: String,
+    ) -> Result<QueryResult, QueryError> {
+        Ok(self.repository.create_confirm(id, email).await?)
     }
 }

@@ -15,4 +15,5 @@ CREATE TABLE IF NOT EXISTS confirm (
 id uuid,
 email text,
 PRIMARY KEY(id),
-);
+)
+WITH default_time_to_live = 360;

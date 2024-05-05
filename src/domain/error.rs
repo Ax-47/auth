@@ -21,7 +21,8 @@ impl From<ErrorMessage> for ApiError {
     }
 }
 impl From<scylla::transport::errors::QueryError> for ApiError {
-    fn from(_: scylla::transport::errors::QueryError) -> ApiError {
+    fn from(e: scylla::transport::errors::QueryError) -> ApiError {
+        println!("{}", e);
         ApiError(ErrorMessage {
             message: "database broke".to_owned(),
             code: 500,

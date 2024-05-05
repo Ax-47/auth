@@ -7,6 +7,7 @@ use lettre::transport::smtp::Error as SmtpError;
 use lettre::{Message, Transport};
 use liquid::ParserBuilder;
 use scylla::transport::errors::QueryError;
+use scylla::transport::query_result;
 use scylla::{QueryResult, Session};
 use std::sync::Arc;
 pub struct UserScyllaRepository {
@@ -34,10 +35,24 @@ impl UserRepository for UserScyllaRepository {
             .await?;
         Ok(query_result)
     }
+    async fn create_confirm(
+        &self,
+        id: uuid::Uuid,
+        email: String,
+    ) -> Result<QueryResult, QueryError> {
+        let query_result = self
+            .scylla_session
+            .query(
+                "INSERT INTO auth.confirm (id,email) VALUES(?,?)",
+                (id, email),
+            )
+            .await?;
+        Ok(query_result)
+    }
     async fn find_user_by_email(&self, email: String) -> Result<QueryResult, QueryError> {
         let query_result = self
             .scylla_session
-            .query("select * from auth.user where email = ?", [email].as_ref())
+            .query("select * from auth.users where email = ?", [email].as_ref())
             .await?;
         Ok(query_result)
     }
@@ -45,17 +60,23 @@ impl UserRepository for UserScyllaRepository {
     async fn is_email_exist(&self, email: String) -> Result<bool, QueryError> {
         let query_result = self
             .scylla_session
-            .query("select id from auth.user where email = ?", [email].as_ref())
+            .query(
+                "select id from auth.users where email = ?",
+                [email].as_ref(),
+            )
             .await?
             .rows;
-        Ok(query_result.is_some())
+        if let Some(rows) = query_result {
+            return Ok(rows.last().is_some());
+        }
+        Ok(false)
     }
 
     async fn send_confirm_email(&self, email: String, confirm_id: String) -> Result<(), SmtpError> {
         let mailer = self.emailer.mailer.clone();
         let email_sender = self.emailer.email.clone();
-        let source =
-            "<a href=\"127.0.0.1:8080/2fa/{{ confirm_id }}/sign_up\">click fucking here</a>";
+        println!("test");
+        let source = "<a href=\"127.0.0.1:8080/auth/{{ confirm_id }}/sign_up\">click here</a>";
         let template = ParserBuilder::with_stdlib()
             .build()
             .unwrap()
@@ -64,6 +85,8 @@ impl UserRepository for UserScyllaRepository {
         let globals = liquid::object!({
         "confirm_id":confirm_id,
                });
+
+        println!("test2");
         let email_b = Message::builder()
             .from(email_sender.parse().unwrap())
             .to(email.parse().unwrap())
@@ -72,6 +95,7 @@ impl UserRepository for UserScyllaRepository {
             .body(template.render(&globals).unwrap())
             .unwrap();
 
+        println!("test3");
         mailer.send(&email_b)?;
         Ok(())
     }
