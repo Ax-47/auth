@@ -15,3 +15,4 @@ tracing-subscriber = { version = "0.3.18", features = ["env-filter"] }
 actix-web = "4"
 serde = { version = "1.0.200", features = ["derive"] }
 async-trait = "0.1.80"
+lettre = "0.11"

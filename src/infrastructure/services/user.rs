@@ -23,4 +23,10 @@ impl UserService for UserServiceImpl {
         let mut cloned = user.clone();
         Ok(self.repository.create(&mut cloned).await?)
     }
+    async fn find_user_by_email(&self, email: String) -> Result<QueryResult, QueryError> {
+        Ok(self.repository.find_user_by_email(email.clone()).await?)
+    }
+    async fn is_email_exist(&self, email: String) -> Result<bool, QueryError> {
+        Ok(self.repository.is_email_exist(email.clone()).await?)
+    }
 }

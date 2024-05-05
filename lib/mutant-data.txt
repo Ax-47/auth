@@ -9,6 +9,8 @@ password text,
 PRIMARY KEY(id),
 );
 
+CREATE INDEX users_by_email ON users (email);
+
 CREATE TABLE IF NOT EXISTS confirm (
 id uuid,
 email text,

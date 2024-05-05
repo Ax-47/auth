@@ -20,7 +20,14 @@ impl From<ErrorMessage> for ApiError {
         ApiError(error)
     }
 }
-
+impl From<scylla::transport::errors::QueryError> for ApiError {
+    fn from(_: scylla::transport::errors::QueryError) -> ApiError {
+        ApiError(ErrorMessage {
+            message: "database broke".to_owned(),
+            code: 500,
+        })
+    }
+}
 impl std::fmt::Display for ApiError {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         write!(f, "{}", self.0)

@@ -6,4 +6,6 @@ use scylla::QueryResult;
 pub trait UserRepository: Send + Sync {
     /// .
     async fn create(&self, new_user: &CreateUser) -> Result<QueryResult, QueryError>;
+    async fn find_user_by_email(&self, email: String) -> Result<QueryResult, QueryError>;
+    async fn is_email_exist(&self, email: String) -> Result<bool, QueryError>;
 }
