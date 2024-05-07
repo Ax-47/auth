@@ -3,7 +3,7 @@ use crate::domain::services::user::UserService;
 use crate::{application::dtos::user, domain::error::ErrorMessage};
 use actix_web::{web, Result};
 use email_address::EmailAddress;
-use std::thread;
+
 use uuid::Uuid;
 pub async fn confirm_email(
     user_service: web::Data<dyn UserService>,
@@ -26,14 +26,7 @@ pub async fn confirm_email(
     }
     let uuid_gen = Uuid::new_v4();
     user_service.create_confirm(uuid_gen, email.clone()).await?;
-    tokio::spawn({
-        async move {
-            println!("test");
-            user_service
-                .send_confirm_email(email, uuid_gen.to_string())
-                .await
-        }
-    });
+    // TODO add to redis
     Ok(web::Json(user::ConfirmCreated {
         message: "send".to_string(),
     }))
