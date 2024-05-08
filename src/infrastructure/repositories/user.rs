@@ -1,25 +1,32 @@
+use crate::domain::entities::confirm;
 use crate::domain::entities::user::CreateUser;
 use crate::domain::repositories::user::UserRepository;
 use crate::infrastructure::external::email::Sender;
+use apalis::redis::RedisStorage;
 use async_trait::async_trait;
 use lettre::message::header::ContentType;
 use lettre::transport::smtp::Error as SmtpError;
 use lettre::{Message, Transport};
 use liquid::ParserBuilder;
 use scylla::transport::errors::QueryError;
-use scylla::transport::query_result;
 use scylla::{QueryResult, Session};
 use std::sync::Arc;
 pub struct UserScyllaRepository {
     pub scylla_session: Arc<Session>,
     pub emailer: Arc<Sender>,
+    pub storage: Arc<RedisStorage<confirm::Confirm>>,
 }
 
 impl UserScyllaRepository {
-    pub fn new(session: Arc<Session>, credentials: Arc<Sender>) -> Self {
+    pub fn new(
+        session: Arc<Session>,
+        credentials: Arc<Sender>,
+        storage: Arc<RedisStorage<confirm::Confirm>>,
+    ) -> Self {
         UserScyllaRepository {
             scylla_session: session,
             emailer: credentials,
+            storage,
         }
     }
 }
@@ -98,5 +105,8 @@ impl UserRepository for UserScyllaRepository {
         println!("test3");
         mailer.send(&email_b)?;
         Ok(())
+    }
+    async fn get_storage(&self) -> Arc<RedisStorage<confirm::Confirm>> {
+        self.storage.clone()
     }
 }

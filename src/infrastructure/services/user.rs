@@ -1,6 +1,8 @@
+use crate::domain::entities::confirm;
 use crate::domain::entities::user::CreateUser;
 use crate::domain::repositories::user::UserRepository;
 use crate::domain::services::user::UserService;
+use apalis::redis::RedisStorage;
 use async_trait::async_trait;
 use lettre::transport::smtp::Error as SmtpError;
 use scylla::transport::errors::QueryError;
@@ -38,5 +40,8 @@ impl UserService for UserServiceImpl {
         email: String,
     ) -> Result<QueryResult, QueryError> {
         Ok(self.repository.create_confirm(id, email).await?)
+    }
+    async fn get_storage(&self) -> RedisStorage<confirm::Confirm> {
+        self.get_storage().await
     }
 }
